@@ -40,10 +40,25 @@
 
 
 'use strict';
-const express = require('express');
+const express = require('express'),
+mongoose = require('mongoose');
+
+mongoose.Promise = global.Promise;
+
 const app = express();
 app.use(express.json());
+
+mongoose.connect('mongodb://localhost:27017/expressjsSample', err => {
+    if(err) {
+        console.log(err);
+        process.exit(1);
+    }
+});
+
+const UserModel = require('./model');
+
 app.use(express.static(__dirname));
+
 app.get('/', (req, res, next) => {
     res.sendFile('index.html');
 });
