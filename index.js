@@ -63,39 +63,51 @@ app.get('/', (req, res, next) => {
     res.sendFile('index.html');
 });
 
-const users = [];
-
 app.get('/users', (req, res) => {
-    res.json(users);
+    UserModel.find().exec().then(users => {
+        res.json(users);
+    }).catch(err => {
+        console.error(err);
+        res.sendStatus(500);
+    });
 });
 
 app.get('/users/:id', (req, res) => {
-    const user = users.find(user => user.id === parseInt(req.params.id));
-    res.json(user);
+    UserModel.findById(req.params.id).exec().then(user => {
+        res.json(user || {});
+    }).catch(err => {
+        console.error(err);
+        res.sendStatus(500);
+    });
 });
 
 app.post('/users', (req, res) => {
-    const user = req.body;
-    user.birthday = new Date(user.birthday);
-    user.id = Date.now();
-    users.push(user);
-    res.json(user);
+    const user = new UserModel(req.body);
+    user.save().then(user => {
+        res.json(user);
+    }).catch(err => {
+        console.error(err);
+        res.sendStatus(500);
+    });
 });
 
 app.put('/users/:id', (req, res) => {
-    const user = req.body;
-    user.birthday = new Date(user.birthday);
-    delete user.id;
-    const index = users.findIndex(user => user.id === parseInt(req.params.id));
-    users[index] = user;
-    res.json(users[index]);
+   const user = new UserModel(req.body);
+   user.update().then(() => {
+       res.sendStatus(200);
+   }).catch(err => {
+       console.error(err);
+       res.sendStatus(500);
+   });
 });
 
 app.delete('/users/:id', (req, res) => {
-    const user = req.body;
-    const index = users.findIndex(user => user.id === parseInt(req.params.id));
-    users.splice(index, 1);
-    res.sendStatus(200);
+    UserModel.remove(req.params.id).then(() => {
+        res.sendStatus(200);
+    }).catch(err => {
+        console.error(err);
+        res.sendStatus(500);
+    });
 });
 
 app.listen(3000, err => {
